@@ -39,9 +39,20 @@ class UsersAPI:
                 self.socketio.emit("user_update_failed", {"error": "User not found"})
                 return
 
-            response = self.users.update_user(data)
-              
+            self.users.update_user(data)
+            self.socketio.emit("user_updated")
 
+              
+        @self.socketio.on("create_user")
+        def create_user(data):
+            self.users.create_user(data)
+            self.socketio.emit("user_created")
+        
+        @self.socketio.on("delete_user")
+        def delete_user(user):
+            user_id = user.get("id")
+            self.users.delete_user(user_id)
+            self.socketio.emit("user_deleted", {"id": user_id})
 
     def get_blueprint(self):
         return users_bp

@@ -47,14 +47,8 @@ class UserDBHandler(DatabaseHandler):
             user = session.query(Users).filter(Users.id == user_id).first()
             
             if user:
-                logger.info(f"User found: {user.name}, current password: {user.password}")
-                
-                # Ensure we're actually getting the password field correctly
                 user.password = hashed_password
                 session.commit()
-                
-                # Log after the commit to confirm success
-                logger.info(f"Password updated successfully for user with id {user_id}")
             else:
                 logger.warning(f"User with id {user_id} not found")
         
@@ -77,3 +71,33 @@ class UserDBHandler(DatabaseHandler):
 
         session.commit() 
         pass
+
+    def create_user(self, user):
+        try:
+            session = self.SessionLocal()
+            logger.info(user)
+            new_user = Users(
+                name=user["name"],  # This will use 'name' instead of 'username'
+                password=user["password"],  # Make sure password is hashed before passing
+                role=user["role"]
+            )
+
+            session.add(new_user)  
+            session.commit() 
+        
+        except Exception as e:
+            session.rollback() 
+            logger.error(f"Error creating user: {e}")
+            return None
+
+    def delete_user(self, user_id):
+        try:
+            session = self.SessionLocal()
+            deleted_count = session.query(Users).filter(Users.id == user_id).delete()
+
+
+            if deleted_count:
+                session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(f"Error deleting user: {e}")

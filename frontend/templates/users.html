@@ -3,15 +3,20 @@
 {% block content %}
 <div class="container mt-5">
     <h1 class="mb-4">User Management</h1>
-    
+
+    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#newUserModal">New User</button>
+
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">Admins</div>
         <ul class="list-group list-group-flush">
             {% for user in all_users %}
                 {% if user.role == 'admin' %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ user.name }}
-                        <button class="btn btn-sm btn-warning" onclick="editUser('{{ user.id }}')">Edit</button>
+                    <li class="list-group-item d-flex justify-content-between align-items-center" data-user-id="{{ user.id }}" data-role="admin">
+                        <span class="user-name">{{ user.name }}</span>
+                        <div>
+                            <button class="btn btn-sm btn-warning edit-btn">Edit</button>
+                            <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+                        </div>
                     </li>
                 {% endif %}
             {% endfor %}
@@ -23,9 +28,12 @@
         <ul class="list-group list-group-flush">
             {% for user in all_users %}
                 {% if user.role != 'admin' %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ user.name }}
-                        <button class="btn btn-sm btn-warning" onclick="editUser('{{ user.id }}')">Edit</button>
+                    <li class="list-group-item d-flex justify-content-between align-items-center" data-user-id="{{ user.id }}" data-role="user">
+                        <span class="user-name">{{ user.name }}</span>
+                        <div>
+                            <button class="btn btn-sm btn-warning edit-btn">Edit</button>
+                            <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+                        </div>
                     </li>
                 {% endif %}
             {% endfor %}
@@ -33,6 +41,7 @@
     </div>
 </div>
 
+<!-- Edit User Modal -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -68,6 +77,42 @@
         </div>
     </div>
 </div>
+
+<!-- New User Modal -->
+<div class="modal fade" id="newUserModal" tabindex="-1" aria-labelledby="newUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newUserModalLabel">New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newUserForm">
+                    <div class="mb-3">
+                        <label for="newUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="newUsername" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="newPassword" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="newRole" class="form-label">Role</label>
+                        <select class="form-select" id="newRole">
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Create User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
