@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">User Management</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">Admins</div>
+        <ul class="list-group list-group-flush">
+            {% for user in all_users %}
+                {% if user.role == 'admin' %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ user.name }}
+                        <button class="btn btn-sm btn-warning" onclick="editUser('{{ user.id }}')">Edit</button>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-secondary text-white">Users</div>
+        <ul class="list-group list-group-flush">
+            {% for user in all_users %}
+                {% if user.role != 'admin' %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ user.name }}
+                        <button class="btn btn-sm btn-warning" onclick="editUser('{{ user.id }}')">Edit</button>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    <input type="hidden" id="userId">
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="password">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-select" id="role">
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='users_script.js') }}"></script>
+{% endblock %}

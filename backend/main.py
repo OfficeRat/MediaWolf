@@ -7,6 +7,7 @@ from api.books_api import BooksAPI
 from api.shows_api import ShowsAPI
 from api.movies_api import MoviesAPI
 from api.settings_api import SettingsAPI
+from api.users_api import UsersAPI
 from api.tasks_api import TasksAPI
 from api.logs_api import LogsAPI
 from api.downloads_api import DownloadsAPI
@@ -18,7 +19,9 @@ from services.sonarr_services import SonarrService
 from services.spotify_services import SpotifyService
 from services.spotdl_download_services import SpotDLDownloadService
 from services.config_services import Config
+from services.user_service import UserService
 from db.music_db_handler import MusicDBHandler
+from db.user_db_handler import UserDBHandler
 
 
 class MediaWolfApp:
@@ -35,6 +38,7 @@ class MediaWolfApp:
         self.socketio = SocketIO(self.app, cors_allowed_origins="*")
 
         self.music_db = MusicDBHandler()
+        self.user_db = UserDBHandler()
         self.config = Config()
         self.lidarr_service = LidarrService(self.config, self.music_db)
         self.sonarr_service = SonarrService()
@@ -43,6 +47,7 @@ class MediaWolfApp:
         self.spotdl_download_service = SpotDLDownloadService(self.config, self.spotdl_download_history)
         self.spotify_service = SpotifyService(self.config)
         self.readarr_service = ()
+        self.user_service = UserService()
 
         self.music_api = MusicAPI(self.music_db, self.socketio, self.lidarr_service, self.spotify_service, self.spotdl_download_service)
         self.books_api = BooksAPI(self.music_db, self.socketio, self.readarr_service)
@@ -51,6 +56,7 @@ class MediaWolfApp:
         self.downloads_api = DownloadsAPI(self.socketio)
         self.subscriptions_api = SubscriptionsAPI(self.socketio)
         self.settings_api = SettingsAPI(self.music_db, self.socketio, self.config)
+        self.users_api = UsersAPI(self.user_service, self.socketio)
         self.tasks_api = TasksAPI(self.socketio, self.lidarr_service, self.radarr_service, self.readarr_service, self.sonarr_service)
         self.logs_api = LogsAPI(self.socketio)
 
@@ -68,6 +74,7 @@ class MediaWolfApp:
         self.app.register_blueprint(self.settings_api.get_blueprint())
         self.app.register_blueprint(self.tasks_api.get_blueprint())
         self.app.register_blueprint(self.logs_api.get_blueprint())
+        self.app.register_blueprint(self.users_api.get_blueprint())
 
         @self.app.route("/")
         def home():
@@ -88,7 +95,7 @@ class MediaWolfApp:
 
     def run(self):
         """Run Flask app with SocketIO."""
-        self.socketio.run(self.app, host=self.host, port=self.port)
+        self.socketio.run(self.app, host=self.host, port=self.port, allow_unsafe_werkzeug=True)
 
 
 if __name__ == "__main__":
