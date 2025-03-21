@@ -4,3 +4,8 @@ sqlalchemy
 musicbrainzngs
 thefuzz
 spotipy
+flask
+flask_socketio
+unidecode
+apscheduler
+bcrypt
