@@ -19,7 +19,7 @@ class UsersAPI:
 
         @users_bp.route("/users")
         def serve_user_page():
-             return render_template("users.html", all_users=self.users.get_all_users())
+             return render_template("users.html" )#, all_users=self.users.get_all_users())
         
     def setup_socket_events(self):
         
@@ -52,7 +52,7 @@ class UsersAPI:
         def delete_user(user):
             user_id = user.get("id")
             self.users.delete_user(user_id)
-            self.socketio.emit("user_deleted", {"id": user_id})
+            self.socketio.emit("user_deleted")
 
     def get_blueprint(self):
         return users_bp

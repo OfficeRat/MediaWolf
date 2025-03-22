@@ -3,9 +3,6 @@ from sqlalchemy.orm import declarative_base, relationship
 from db.base import Base
 
 
-Base = declarative_base()
-
-
 class DismissedArtist(Base):
     __tablename__ = "dismissed_artists"
 

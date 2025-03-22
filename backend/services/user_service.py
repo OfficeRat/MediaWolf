@@ -13,7 +13,6 @@ class UserService:
     def get_all_users(self):
         """Fetch all users from the database."""
         users = self.user_db_handler.get_existing_user()
-        #logger.info(users)
         return users
     
     def get_user_by_id(self, id):

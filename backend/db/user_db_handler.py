@@ -75,9 +75,8 @@ class UserDBHandler(DatabaseHandler):
     def create_user(self, user):
         try:
             session = self.SessionLocal()
-            logger.info(user)
             new_user = Users(
-                name=user["name"],  # This will use 'name' instead of 'username'
+                name=user["name"].strip(),  # This will use 'name' instead of 'username'
                 password=user["password"],  # Make sure password is hashed before passing
                 role=user["role"]
             )
