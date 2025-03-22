@@ -1,7 +1,8 @@
-from logger import logger
-import requests
-import pylast
 import time
+
+import pylast
+import requests
+from logger import logger
 
 
 class LastFMService:

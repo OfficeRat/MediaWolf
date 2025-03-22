@@ -1,27 +1,33 @@
-from flask import Flask, render_template
-from flask_socketio import SocketIO
-from logger import logger
 import os
-from api.music_api import MusicAPI
 from api.books_api import BooksAPI
-from api.shows_api import ShowsAPI
+from api.downloads_api import DownloadsAPI
+from api.logs_api import LogsAPI
 from api.movies_api import MoviesAPI
+from api.music_api import MusicAPI
 from api.settings_api import SettingsAPI
 from api.users_api import UsersAPI
 from api.tasks_api import TasksAPI
 from api.logs_api import LogsAPI
 from api.downloads_api import DownloadsAPI
+from api.shows_api import ShowsAPI
 from api.subscriptions_api import SubscriptionsAPI
+from api.tasks_api import TasksAPI
+from db.music_db_handler import MusicDBHandler
+from flask import Flask, render_template
+from flask_socketio import SocketIO
+from logger import logger
+from services.config_services import Config
 from services.lidarr_services import LidarrService
 from services.radarr_services import RadarrService
 from services.readarr_services import ReadarrService
 from services.sonarr_services import SonarrService
-from services.spotify_services import SpotifyService
 from services.spotdl_download_services import SpotDLDownloadService
 from services.config_services import Config
 from services.user_service import UserService
+from services.spotify_services import SpotifyService
 from db.music_db_handler import MusicDBHandler
 from db.user_db_handler import UserDBHandler
+
 
 
 class MediaWolfApp:
@@ -54,10 +60,10 @@ class MediaWolfApp:
         self.movies_api = MoviesAPI(self.music_db, self.socketio, self.radarr_service)
         self.shows_api = ShowsAPI(self.music_db, self.socketio, self.sonarr_service)
         self.downloads_api = DownloadsAPI(self.socketio)
-        self.subscriptions_api = SubscriptionsAPI(self.socketio)
+        self.subscriptions_api = SubscriptionsAPI(self.socketio, self.config)
         self.settings_api = SettingsAPI(self.music_db, self.socketio, self.config)
         self.users_api = UsersAPI(self.user_service, self.socketio)
-        self.tasks_api = TasksAPI(self.socketio, self.lidarr_service, self.radarr_service, self.readarr_service, self.sonarr_service)
+        self.tasks_api = TasksAPI(self.socketio, self.config, self.lidarr_service, self.radarr_service, self.readarr_service, self.sonarr_service)
         self.logs_api = LogsAPI(self.socketio)
 
         self.add_routes()
@@ -95,9 +101,15 @@ class MediaWolfApp:
 
     def run(self):
         """Run Flask app with SocketIO."""
-        self.socketio.run(self.app, host=self.host, port=self.port, allow_unsafe_werkzeug=True)
+        self.socketio.run(self.app, host=self.host, port=self.port)
 
+    def get_app(self):
+        return self.app
+
+
+media_wolf_app = MediaWolfApp()
 
 if __name__ == "__main__":
-    media_wolf_app = MediaWolfApp()
     media_wolf_app.run()
+else:
+    app = media_wolf_app.get_app()

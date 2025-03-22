@@ -9,14 +9,14 @@ This project is still in the early stages of development and **is not yet ready 
 ### 💡 Getting Involved  
 
 Contributions are welcome from anyone who wants to help shape the project! Here’s how to jump in:  
-
-> **1. Fork the repo** – Pick a section you’d like to work on and submit a Pull Request (PR) when you’re ready.  
+ 
+> **1. Start a discussion** – Before diving in, use the repo's Discussions tab to share what you’re planning. This helps avoid overlap and keeps everyone on the same page.  
 >  
-> **2. Start a discussion** – Before diving in, use the repo's Discussions tab to share what you’re planning. This helps avoid overlap and keeps everyone on the same page.  
->  
-> **3. Recognition** – Contributors who handle a significant part of the work may be added as maintainers to help guide the project forward.  
+> **2. Create a Fork** – Fork the repository to create your own copy. Next, create a new branch within your fork for your changes. Push your branch so your progress is visible, and when you're ready, submit a Pull Request (PR).
+>
+> **3. Recognition** – Contributors who handle a significant part of the work will be added as maintainers of the project and the organisation to help guide the project forward.  
 
-**Note:** Be sure to check out [TheWicklowWolf](https://github.com/TheWicklowWolf) for reference and proof of concepts — it will serve as a guide for formats,docker builds, actions and overall structure/style.  
+**Note:** Be sure to check out [TheWicklowWolf](https://github.com/TheWicklowWolf) for reference and proof of concepts — it will serve as a guide for formats, docker builds, actions and overall structure/style.  
 
 Thanks for your interest! 🚀  
 
@@ -37,7 +37,7 @@ Thanks for your interest! 🚀
 ✅ Manual Search → Search via TMDB with option to add to Sonarr
 
 ## Music (Lidarr, LastFM, yt-dlp, Spotify)  
-✅ Manual Search → Search Spotify for music and download via spotDL (which uses yt-dlp)
+✅ Manual Search → Search Spotify for music and download via spotDL (which uses yt-dlp)  
 ✅ Recommendations → Generate artist recommendations from LastFM based on Lidarr library (with options to add or dismiss suggestions including filters and sorting)  
 ✅ Missing List → Read Lidarr library, fetch missing albums and download via yt-dlp  
 
@@ -104,25 +104,30 @@ MediaWolf/
 ├── docker/
 │   ├── .dockerignore
 │   ├── Dockerfile
+│   ├── gunicorn_config.py
+│   ├── init.sh
 │   └── requirements.txt
 ├── frontend/
 │   ├── static/
-│   │   ├── base_script.js
-│   │   ├── base_style.css
-│   │   ├── book_script.js
-│   │   ├── favicon.png
-│   │   ├── lidarr.svg
-│   │   ├── logo.png
-│   │   ├── logs_script.js
-│   │   ├── movies_script.js
-│   │   ├── music_script.js
-│   │   ├── music_style.css
-│   │   ├── settings_script.js
-│   │   ├── shows_script.js
-│   │   ├── subscriptions_script.js
-│   │   ├── tasks_script.js
-│   │   ├── theme_script.js
-│   │   └── yt_dlp.png
+│   │   ├── js/
+│   │   │   ├── base_script.js
+│   │   │   ├── logs_script.js
+│   │   │   ├── movies_script.js
+│   │   │   ├── music_script.js
+│   │   │   ├── music_style.css
+│   │   │   ├── settings_script.js
+│   │   │   ├── shows_script.js
+│   │   │   ├── subscriptions_script.js
+│   │   │   ├── tasks_script.js
+│   │   │   └── theme_script.js
+│   │   ├── css/
+│   │   │   ├── base_style.css
+│   │   │   └── book_script.js
+│   │   └── assets/
+│   │       ├── favicon.png
+│   │       ├── lidarr.svg
+│   │       ├── logo.png
+│   │       └── yt_dlp.png
 │   └── templates/
 │       ├── base.html
 │       ├── books.html
@@ -178,3 +183,43 @@ MediaWolf/
 
 **Settings Manager**
 - [x] Settings Loader & Saver
+
+
+# 📦 Local Development Setup
+
+**Docker Setup**
+
+In order to quickly get started with the project you can use the docker compose file to start the project.
+
+- Make sure you have docker and docker compose installed
+- Clone the repository
+- Run `docker compose up -d`
+- Access the application at `http://127.0.0.1:5000`
+
+
+**Manual Setup**
+
+- Clone the repository
+- create a virtual environment and activate it (You can use pyenv for ease of maintaining multiple versions)
+- Run `pip install -r docker/requirements.txt`
+- Run `export FLASK_APP=backend/main.py && flask run`
+- Access the application at `http://127.0.0.1:5000`
+
+**Commiting Changes**
+
+Make sure you install the pre-commit hooks by running `pre-commit install`
+
+- Run `git add .`
+- Run `git commit -m "Commit Message"`
+- Run `git push`
+
+You might face some issues in your files with the pre-commit hooks, fix them and try again.
+
+### Example Development Setup
+
+The development setup is as follows:
+
+- **VSCode** with Black formatting (line length set to 200 characters).
+- **isort** configured for organizing imports.
+- Default formatters for JavaScript, CSS, and HTML.
+- Python 3.12.

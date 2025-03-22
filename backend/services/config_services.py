@@ -1,20 +1,28 @@
-import os
 import json
-from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Any
+import os
+from dataclasses import asdict, dataclass, field
+from typing import Any, Dict, List
+
 from logger import logger
 
-LOG_FILE_NAME = "config/mediawolf_log.log"
-CONFIG_FILE_NAME = "config/mediawolf_settings.json"
-DB_URL = "sqlite:///config/mediawolf_database.db"
+LOG_FILE_NAME: str = "/config/mediawolf_log.log"
+DB_URL: str = "sqlite:////config/mediawolf_database.db"
 
 
 @dataclass
 class Config:
     """Configuration class for environment-based settings using dataclasses."""
 
+    # Class constants
+    CONFIG_FILE_NAME: str = "/config/mediawolf_settings.json"
+    TASKS_CONFIG_FILE_NAME: str = "/config/mediawolf_tasks.json"
+    SUBSCRIPTION_CONFIG_FILE_PATH: str = "/config/mediawolf_subs.json"
+
     # General Settings
     log_level: str = "INFO"
+    puid: int = 1000
+    pgid: int = 1000
+    release_version: str = "NA"
 
     # Last FM Settings
     lastfm_api_key: str = ""

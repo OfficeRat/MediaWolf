@@ -1,7 +1,7 @@
-from logger import logger
 import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
+from logger import logger
 from services.config_services import Config
+from spotipy.oauth2 import SpotifyClientCredentials
 
 
 class SpotifyService:

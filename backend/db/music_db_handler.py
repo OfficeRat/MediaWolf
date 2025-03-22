@@ -1,8 +1,9 @@
 import urllib.parse
+
+from db.database_handler import DatabaseHandler
+from db.music_models import DismissedArtist, LidarrArtist, RecommendedArtist
 from logger import logger
 from sqlalchemy import func
-from db.music_models import RecommendedArtist, LidarrArtist, DismissedArtist
-from db.database_handler import DatabaseHandler
 
 
 class MusicDBHandler(DatabaseHandler):
@@ -120,8 +121,8 @@ class MusicDBHandler(DatabaseHandler):
         min_play_count = data.get("min_play_count", None)
         min_listeners = data.get("min_listeners", None)
         sort_by = data.get("sort_by", "play_count")
-        num_results = data.get("num_results", 5)
-        page = data.get("page", None)
+        num_results = data.get("num_results", 10)
+        page = data.get("page", 1)
 
         if selected_artist == "all":
             db_results = self._get_random_artists(min_play_count, min_listeners, sort_by, num_results, page)
@@ -140,21 +141,25 @@ class MusicDBHandler(DatabaseHandler):
             lidarr_artist = session.query(LidarrArtist).filter(func.lower(LidarrArtist.name) == lidarr_artist_name.lower()).first()
 
             if lidarr_artist:
-                recommended_artists = lidarr_artist.recommended_artists
+                recommended_artists_query = session.query(RecommendedArtist).filter(
+                    RecommendedArtist.lidarr_artist_id == lidarr_artist.id, ~RecommendedArtist.name.in_(session.query(DismissedArtist.name))
+                )
 
                 if min_play_count:
-                    recommended_artists = [artist for artist in recommended_artists if artist.play_count >= min_play_count]
+                    recommended_artists_query = recommended_artists_query.filter(RecommendedArtist.play_count >= min_play_count)
                 if min_listeners:
-                    recommended_artists = [artist for artist in recommended_artists if artist.listeners >= min_listeners]
+                    recommended_artists_query = recommended_artists_query.filter(RecommendedArtist.listeners >= min_listeners)
 
                 if sort_by == "plays-desc":
-                    recommended_artists = sorted(recommended_artists, key=lambda x: x.play_count, reverse=True)
+                    recommended_artists_query = recommended_artists_query.order_by(RecommendedArtist.play_count.desc())
                 elif sort_by == "plays-asc":
-                    recommended_artists = sorted(recommended_artists, key=lambda x: x.play_count)
+                    recommended_artists_query = recommended_artists_query.order_by(RecommendedArtist.play_count.asc())
                 elif sort_by == "listeners-desc":
-                    recommended_artists = sorted(recommended_artists, key=lambda x: x.listeners, reverse=True)
+                    recommended_artists_query = recommended_artists_query.order_by(RecommendedArtist.listeners.desc())
                 elif sort_by == "listeners-asc":
-                    recommended_artists = sorted(recommended_artists, key=lambda x: x.listeners)
+                    recommended_artists_query = recommended_artists_query.order_by(RecommendedArtist.listeners.asc())
+
+                recommended_artists = recommended_artists_query.all()
 
                 logger.debug(f"Found {len(recommended_artists)} recommended artists for: {lidarr_artist_name}")
                 return recommended_artists
@@ -170,10 +175,10 @@ class MusicDBHandler(DatabaseHandler):
             session.close()
 
     def _get_random_artists(self, min_play_count=None, min_listeners=None, sort_by="play_count", num_results=10, page=1):
-        """Retrieve random recommended artists with filters and sorting."""
+        """Retrieve random recommended artists with filters, sorting, and pagination."""
         session = self.SessionLocal()
         try:
-            query = session.query(RecommendedArtist)
+            query = session.query(RecommendedArtist).filter(~RecommendedArtist.name.in_(session.query(DismissedArtist.name)))
 
             if min_play_count:
                 query = query.filter(RecommendedArtist.play_count >= min_play_count)
@@ -181,24 +186,22 @@ class MusicDBHandler(DatabaseHandler):
                 query = query.filter(RecommendedArtist.listeners >= min_listeners)
 
             if sort_by == "random":
-                query = query.order_by(func.random()).limit(num_results)
+                query = query.order_by(func.random())
             elif sort_by == "plays-desc":
-                query = query.order_by(RecommendedArtist.play_count.desc()).limit(num_results)
+                query = query.order_by(RecommendedArtist.play_count.desc())
             elif sort_by == "plays-asc":
-                query = query.order_by(RecommendedArtist.play_count.asc()).limit(num_results)
+                query = query.order_by(RecommendedArtist.play_count.asc())
             elif sort_by == "listeners-desc":
-                query = query.order_by(RecommendedArtist.listeners.desc()).limit(num_results)
+                query = query.order_by(RecommendedArtist.listeners.desc())
             elif sort_by == "listeners-asc":
-                query = query.order_by(RecommendedArtist.listeners.asc()).limit(num_results)
+                query = query.order_by(RecommendedArtist.listeners.asc())
 
-            query = query.distinct()
-            artists = query.all()
+            offset = (page - 1) * num_results
+            query = query.offset(offset).limit(num_results)
 
-            if not artists:
-                logger.error("No artists found matching the criteria.")
-                return []
+            artists = query.distinct().all()
 
-            logger.debug(f"Artists retrieved (sorted by {sort_by}): {len(artists)} artists.")
+            logger.debug(f"Page {page}: Retrieved {len(artists)} artists sorted by {sort_by}")
             return artists
 
         except Exception as e:
@@ -227,7 +230,7 @@ class MusicDBHandler(DatabaseHandler):
                     rec["status"] = status
 
             else:
-                logger.error(f"No recommended artists found for name '{artist_name}'.")
+                logger.info(f"No recommended artists found for name '{artist_name}'.")
 
         except Exception as e:
             logger.error(f"Error updating status for recommended artist '{artist_name}': {str(e)}")
@@ -240,10 +243,17 @@ class MusicDBHandler(DatabaseHandler):
         session = self.get_session()
         try:
             artist_name = urllib.parse.unquote(raw_artist_name)
-            dismissed_artist = DismissedArtist(name=artist_name)
-            session.add(dismissed_artist)
-            session.commit()
-            logger.info(f"Dismissed artist: {artist_name}")
+            existing_dismissed = session.query(DismissedArtist).filter(func.lower(DismissedArtist.name) == artist_name.lower()).first()
+
+            if not existing_dismissed:
+                dismissed_artist = DismissedArtist(name=artist_name)
+                session.add(dismissed_artist)
+                session.commit()
+                logger.info(f"Dismissed artist: {artist_name}")
+            else:
+                logger.info(f"Artist '{artist_name}' is already dismissed.")
+
+            self.recommended_artists = [artist for artist in self.recommended_artists if artist.get("name", "").lower() != artist_name.lower()]
 
         except Exception as e:
             logger.error(f"Error dismissing artist: {str(e)}")

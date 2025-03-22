@@ -1,7 +1,8 @@
-import threading
 import queue
-from logger import logger
 import subprocess
+import threading
+
+from logger import logger
 from services.config_services import Config
 
 

@@ -1,16 +1,17 @@
-from logger import logger
+import concurrent.futures
+import json
+import os
+import urllib.parse
+from datetime import datetime
+
+import musicbrainzngs
 import requests
 from db.music_db_handler import MusicDBHandler
-from services.lastfm_services import LastFMService
+from logger import logger
 from services.config_services import Config
-import os
-import json
-import urllib.parse
-import musicbrainzngs
+from services.lastfm_services import LastFMService
 from thefuzz import fuzz
 from unidecode import unidecode
-from datetime import datetime
-import concurrent.futures
 
 
 class LidarrService:

@@ -1,10 +1,10 @@
+from db.music_db_handler import MusicDBHandler
 from flask import Blueprint, render_template
 from flask_socketio import SocketIO
-from services.lidarr_services import LidarrService
-from services.spotify_services import SpotifyService
-from services.spotdl_download_services import SpotDLDownloadService
-from db.music_db_handler import MusicDBHandler
 from logger import logger
+from services.lidarr_services import LidarrService
+from services.spotdl_download_services import SpotDLDownloadService
+from services.spotify_services import SpotifyService
 
 music_bp = Blueprint("music", __name__)
 
