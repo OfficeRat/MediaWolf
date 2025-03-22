@@ -1,15 +1,14 @@
 from flask import Blueprint, render_template
 from flask_socketio import SocketIO
 from services.user_service import UserService
-from logger import logger
+
 users_bp = Blueprint("users", __name__)
 
 
 class UsersAPI:
     def __init__(self, user_service: UserService, socketio: SocketIO):
         self.socketio = socketio
-        self.users = user_service  
-        
+        self.users = user_service
 
         self.setup_routes()
         self.setup_socket_events()
@@ -19,10 +18,9 @@ class UsersAPI:
 
         @users_bp.route("/users")
         def serve_user_page():
-             return render_template("users.html" )#, all_users=self.users.get_all_users())
-        
+            return render_template("users.html")
+
     def setup_socket_events(self):
-        
         @self.socketio.on("get_users")
         def get_users():
             """Send all users to the client (in case they manually refresh the list)."""
@@ -42,12 +40,11 @@ class UsersAPI:
             self.users.update_user(data)
             self.socketio.emit("user_updated")
 
-              
         @self.socketio.on("create_user")
         def create_user(data):
             self.users.create_user(data)
             self.socketio.emit("user_created")
-        
+
         @self.socketio.on("delete_user")
         def delete_user(user):
             user_id = user.get("id")
